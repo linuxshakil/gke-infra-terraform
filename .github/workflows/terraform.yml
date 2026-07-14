@@ -12,9 +12,9 @@ permissions:
   pull-requests: write
 
 env:
-  TF_VAR_project_id: ${{ vars.TF_VAR_project_id }}
-  TF_VAR_region: ${{ vars.TF_VAR_region }}
-  TF_VAR_cluster_name: ${{ vars.TF_VAR_cluster_name }}
+  TF_VAR_project_id: ${{ secrets.TF_VAR_project_id }}
+  TF_VAR_region: ${{ secrets.TF_VAR_region }}
+  TF_VAR_cluster_name: ${{ secrets.TF_VAR_cluster_name }}
 
 jobs:
   terraform:
