@@ -19,9 +19,19 @@ resource "google_artifact_registry_repository" "node_app_repo" {
   project       = var.project_id
 }
 
-module "jenkins" {
-  source     = "./modules/jenkins"
-  project_id = var.project_id
+#module "jenkins" {
+# source     = "./modules/jenkins"
+# project_id = var.project_id
+#
+# depends_on = [module.gke]
+#}
 
-  depends_on = [module.gke]
+module "jenkins_vm" {
+  source     = "./modules/jenkins-vm"
+  project_id = var.project_id
+  region     = var.region
+  vpc_id     = module.network.vpc_id
+  subnet_id  = module.network.subnet_id
+
+  depends_on = [module.network]
 }
