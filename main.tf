@@ -12,3 +12,16 @@ module "gke" {
   vpc_id       = module.network.vpc_id
   subnet_id    = module.network.subnet_id
 }
+resource "google_artifact_registry_repository" "node_app_repo" {
+  location      = var.region
+  repository_id = "node-app-repo"
+  format        = "DOCKER"
+  project       = var.project_id
+}
+
+module "jenkins" {
+  source     = "./modules/jenkins"
+  project_id = var.project_id
+
+  depends_on = [module.gke]
+}
