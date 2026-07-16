@@ -32,6 +32,6 @@ module "jenkins_vm" {
   region     = var.region
   vpc_id     = module.network.vpc_id
   subnet_id  = module.network.subnet_id
-
+   ##
   depends_on = [module.network]
 }
