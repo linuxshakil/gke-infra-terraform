@@ -22,6 +22,32 @@ resource "google_artifact_registry_repository" "node_app_repo" {
   project       = var.project_id
 }
 
+
+module "cloudsql" {
+
+  source = "./modules/cloudsql"
+
+  project_id = var.project_id
+
+  region = var.region
+
+  instance_name = "wordpress-db"
+
+  database_name = "wordpress"
+
+  database_user = "wordpress"
+
+  network_id = module.network.vpc_id
+
+  depends_on = [
+
+    module.network
+
+  ]
+
+}
+
+
 #module "jenkins" {
 # source     = "./modules/jenkins"
 # project_id = var.project_id
