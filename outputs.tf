@@ -22,3 +22,9 @@ output "database_password" {
   sensitive = true
 
 }
+
+output "secret_manager_secret" {
+
+  value = module.secret_manager.secret_name
+
+}

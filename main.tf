@@ -47,6 +47,22 @@ module "cloudsql" {
 
 }
 
+module "secret_manager" {
+
+  source = "./modules/secret-manager"
+
+  project_id = var.project_id
+
+  db_password = module.cloudsql.database_password
+
+  depends_on = [
+
+    module.cloudsql
+
+  ]
+
+}
+
 
 #module "jenkins" {
 # source     = "./modules/jenkins"
