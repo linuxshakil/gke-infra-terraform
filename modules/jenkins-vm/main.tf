@@ -72,7 +72,7 @@ resource "google_compute_instance" "jenkins" {
   network_interface {
     network    = var.vpc_id
     subnetwork = var.subnet_id
-    access_config {}   # public IP milega
+    access_config {} # public IP milega
   }
 
   service_account {

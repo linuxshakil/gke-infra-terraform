@@ -20,8 +20,8 @@ resource "google_project_iam_member" "jenkins_artifact_writer" {
 # Workload Identity binding — Jenkins pod is SA ko "impersonate" karega
 resource "google_service_account_iam_member" "jenkins_workload_identity" {
   service_account_id = google_service_account.jenkins_sa.name
-  role                = "roles/iam.workloadIdentityUser"
-  member              = "serviceAccount:${var.project_id}.svc.id.goog[cicd/jenkins]"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[cicd/jenkins]"
 }
 
 resource "helm_release" "jenkins" {

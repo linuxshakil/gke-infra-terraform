@@ -1,8 +1,11 @@
 module "network" {
-  source       = "./modules/network"
+  source = "./modules/network"
+
+  project_id   = var.project_id
   cluster_name = var.cluster_name
   region       = var.region
 }
+
 
 module "gke" {
   source       = "./modules/gke"
@@ -32,6 +35,6 @@ module "jenkins_vm" {
   region     = var.region
   vpc_id     = module.network.vpc_id
   subnet_id  = module.network.subnet_id
-   ##
+  ##
   depends_on = [module.network]
 }
