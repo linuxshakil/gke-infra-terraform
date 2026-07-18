@@ -36,10 +36,10 @@ output "wordpress_namespace" {
 output "wordpress_service_account" {
   value = module.wordpress.service_account
 }
-
-output "wordpress_storage_class" {
-  value = module.wordpress.storage_class
-}
+#
+#output "wordpress_storage_class" {
+#  value = module.wordpress.storage_class
+#}
 
 output "wordpress_pvc" {
   value = module.wordpress.persistent_volume_claim
