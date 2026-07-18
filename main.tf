@@ -64,6 +64,28 @@ module "secret_manager" {
 }
 
 
+module "wordpress" {
+
+  source = "./modules/wordpress"
+
+  project_id = var.project_id
+
+  region = var.region
+
+  db_host = module.cloudsql.private_ip
+
+  db_name = module.cloudsql.database_name
+
+  db_user = module.cloudsql.database_user
+
+  db_password = module.cloudsql.database_password
+
+  domain = "myahad.online"
+
+  gcp_service_account = "wordpress-gsa@${var.project_id}.iam.gserviceaccount.com"
+
+}
+
 #module "jenkins" {
 # source     = "./modules/jenkins"
 # project_id = var.project_id
