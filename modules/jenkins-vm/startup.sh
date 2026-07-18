@@ -1,21 +1,24 @@
+cat > modules/jenkins-vm/startup.sh << 'EOF'
 #!/bin/bash
 set -e
 
-# Java install (Jenkins ke liye zaroori)
+# Network ready hone ka wait (boot ke turant baad kabhi kabhi DNS/network slow hota hai)
+sleep 15
+
 apt-get update
 apt-get install -y fontconfig openjdk-17-jre gnupg curl
 
-# Jenkins install
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+# Jenkins GPG key — dearmor karke binary keyring banao (apt ko yahi chahiye)
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | gpg --dearmor -o /usr/share/keyrings/jenkins-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg]" \
   "https://pkg.jenkins.io/debian-stable binary/" | tee \
   /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 apt-get update
 apt-get install -y jenkins
 
-# Docker install (build steps ke liye)
+# Docker install
 apt-get install -y ca-certificates
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
@@ -27,25 +30,20 @@ echo \
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io
 
-# Jenkins user ko docker group me daalo (docker commands chalane ke liye)
 usermod -aG docker jenkins
 
-# gcloud CLI already Debian image me pre-installed hota hai GCP par,
-# lekin agar na ho to:
 if ! command -v gcloud &> /dev/null; then
   curl https://sdk.cloud.google.com | bash
 fi
 
-# kubectl install
-apt-get install -y kubectl || (
+if ! command -v kubectl &> /dev/null; then
   curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
   install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-)
+fi
 
-# gke-gcloud-auth-plugin (kubectl ko GKE se auth karne ke liye zaroori)
-apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin || \
-  gcloud components install gke-gcloud-auth-plugin --quiet
+apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin || true
 
 systemctl enable jenkins
 systemctl restart jenkins
 systemctl restart docker
+EOF
