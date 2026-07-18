@@ -28,7 +28,10 @@ externalDatabase:
 
 persistence:
   enabled: true
-  existingClaim: wordpress-data
+  storageClass: standard-rwo
+  accessModes:
+    - ReadWriteOnce
+  size: 20Gi
 
 ##
 ## Service Account
@@ -46,6 +49,13 @@ service:
   type: ClusterIP
 
 ##
+## Ingress
+##
+
+ingress:
+  enabled: false
+
+##
 ## Resources
 ##
 
@@ -59,7 +69,7 @@ resources:
     memory: 1Gi
 
 ##
-## Health
+## Probes
 ##
 
 startupProbe:
@@ -80,3 +90,10 @@ podSecurityContext:
 
 containerSecurityContext:
   enabled: true
+
+##
+## Autoscaling
+##
+
+autoscaling:
+  enabled: false

@@ -20,7 +20,6 @@ resource "helm_release" "wordpress" {
 
   depends_on = [
     kubernetes_secret.wordpress_db,
-    kubernetes_persistent_volume_claim.wordpress,
     kubernetes_service_account.wordpress
   ]
 }
