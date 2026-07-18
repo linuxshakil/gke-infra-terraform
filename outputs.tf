@@ -28,3 +28,23 @@ output "secret_manager_secret" {
   value = module.secret_manager.secret_name
 
 }
+
+output "wordpress_namespace" {
+  value = module.wordpress.namespace
+}
+
+output "wordpress_service_account" {
+  value = module.wordpress.service_account
+}
+
+output "wordpress_storage_class" {
+  value = module.wordpress.storage_class
+}
+
+output "wordpress_pvc" {
+  value = module.wordpress.persistent_volume_claim
+}
+
+output "wordpress_release" {
+  value = module.wordpress.helm_release
+}
