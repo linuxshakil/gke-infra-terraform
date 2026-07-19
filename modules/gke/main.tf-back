@@ -7,8 +7,13 @@ resource "google_container_cluster" "primary" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  networking_mode = "VPC_NATIVE"
+  node_config {
+    machine_type = "e2-small"
+    disk_size_gb = 20
+    disk_type    = "pd-standard"
+  }
 
+  networking_mode = "VPC_NATIVE"
   ip_allocation_policy {
     cluster_secondary_range_name  = "pods-range"
     services_secondary_range_name = "services-range"
@@ -39,37 +44,25 @@ resource "google_container_cluster" "primary" {
     horizontal_pod_autoscaling {
       disabled = false
     }
-
     http_load_balancing {
       disabled = false
     }
   }
 
   logging_config {
-    enable_components = [
-      "SYSTEM_COMPONENTS",
-      "WORKLOADS"
-    ]
+    enable_components = ["SYSTEM_COMPONENTS", "WORKLOADS"]
   }
 
   monitoring_config {
-    enable_components = [
-      "SYSTEM_COMPONENTS"
-    ]
+    enable_components = ["SYSTEM_COMPONENTS"]
   }
+
+  deletion_protection = false
 
   maintenance_policy {
     daily_maintenance_window {
       start_time = "18:00"
     }
-  }
-
-  deletion_protection = false
-
-  lifecycle {
-    ignore_changes = [
-      node_config
-    ]
   }
 }
 
@@ -85,7 +78,6 @@ resource "google_project_iam_member" "gke_sa_roles" {
     "roles/monitoring.viewer",
     "roles/artifactregistry.reader",
   ])
-
   project = var.project_id
   role    = each.value
   member  = "serviceAccount:${google_service_account.gke_node_sa.email}"
@@ -107,7 +99,6 @@ resource "google_container_node_pool" "primary_nodes" {
     disk_type    = "pd-standard"
 
     service_account = google_service_account.gke_node_sa.email
-
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
@@ -125,10 +116,7 @@ resource "google_container_node_pool" "primary_nodes" {
       env = "production"
     }
 
-    tags = [
-      "gke-node",
-      "${var.cluster_name}-node"
-    ]
+    tags = ["gke-node", "${var.cluster_name}-node"]
   }
 
   management {
