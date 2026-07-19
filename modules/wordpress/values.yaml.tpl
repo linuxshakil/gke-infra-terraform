@@ -23,6 +23,14 @@ externalDatabase:
   existingSecretPasswordKey: password
 
 ##
+## Force database host (workaround for latest Bitnami image)
+##
+
+extraEnvVars:
+  - name: WORDPRESS_DATABASE_HOST
+    value: "${db_host}"
+
+##
 ## Persistence
 ##
 
