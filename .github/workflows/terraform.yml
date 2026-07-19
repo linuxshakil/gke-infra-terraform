@@ -1,10 +1,13 @@
-name: 'Terraform GKE CI/CD'
+name: Terraform GKE CI/CD
 
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -17,15 +20,21 @@ env:
   TF_VAR_cluster_name: ${{ secrets.TF_VAR_cluster_name }}
 
 jobs:
+
   terraform:
-    name: 'Terraform Plan/Apply'
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
-      - name: Authenticate to GCP (WIF)
+      - uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
@@ -34,44 +43,25 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.9.0"
+          terraform_version: 1.9.0
+
+      - name: Verify Helm
+        run: |
+          helm version
+          helm pull oci://registry-1.docker.io/bitnamicharts/wordpress --version 32.1.12
 
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Format Check
+      - name: Terraform Format
         run: terraform fmt -check
-        continue-on-error: true
 
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
-        id: plan
-        run: terraform plan -no-color -input=false
-        continue-on-error: true
-
-      - name: Comment Plan on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const output = `#### Terraform Plan 📖
-            \`\`\`
-            ${{ steps.plan.outputs.stdout }}
-            \`\`\`
-            `;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
-
-      - name: Terraform Plan Status
-        if: steps.plan.outcome == 'failure'
-        run: exit 1
+        run: terraform plan -input=false
 
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve -input=false

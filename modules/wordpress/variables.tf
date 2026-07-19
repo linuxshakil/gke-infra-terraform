@@ -30,3 +30,9 @@ variable "domain" {
 variable "gcp_service_account" {
   type = string
 }
+
+variable "wordpress_chart_version" {
+  type    = string
+  default = "32.1.12"
+}
+

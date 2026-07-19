@@ -1,13 +1,17 @@
 resource "helm_release" "wordpress" {
 
-  name       = "wordpress"
-  namespace  = kubernetes_namespace.wordpress.metadata[0].name
+  name      = "wordpress"
+  namespace = kubernetes_namespace.wordpress.metadata[0].name
 
-  repository = "https://charts.bitnami.com/bitnami"
-  chart      = "wordpress"
+  repository = "oci://registry-1.docker.io/bitnamicharts"
+
+  chart = "wordpress"
+
+  version = "32.1.12"
 
   timeout = 900
-  wait    = true
+
+  wait = true
 
   values = [
     templatefile("${path.module}/values.yaml.tpl", {

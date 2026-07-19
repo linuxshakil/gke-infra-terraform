@@ -1,27 +1,22 @@
 terraform {
-
-  required_version = ">= 1.9"
-
+  required_version = ">= 1.6"
   required_providers {
-
     google = {
       source  = "hashicorp/google"
-      version = "~> 6.0"
+      version = "~> 5.0"
     }
-
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.38"
+      version = "~> 2.30"
     }
-
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.17"
+      version = "~> 2.14"
     }
 
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.7"
+      version = "~>3.6"
     }
   }
 }
@@ -34,22 +29,15 @@ provider "google" {
 data "google_client_config" "default" {}
 
 provider "kubernetes" {
-
-  host = "https://${module.gke.cluster_endpoint}"
-
+  host                   = "https://${module.gke.cluster_endpoint}"
   cluster_ca_certificate = base64decode(module.gke.cluster_ca_cert)
-
-  token = data.google_client_config.default.access_token
+  token                  = data.google_client_config.default.access_token
 }
 
 provider "helm" {
-
   kubernetes {
-
-    host = "https://${module.gke.cluster_endpoint}"
-
+    host                   = "https://${module.gke.cluster_endpoint}"
     cluster_ca_certificate = base64decode(module.gke.cluster_ca_cert)
-
-    token = data.google_client_config.default.access_token
+    token                  = data.google_client_config.default.access_token
   }
 }
