@@ -12,4 +12,3 @@ db_name = "wordpress"
 
 db_user = "wordpress"
 
-db_password = "-5hhgyYxl>o*x>kAvt[5"
