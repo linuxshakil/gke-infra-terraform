@@ -1,6 +1,6 @@
-output "jenkins_url" {
-  value = "http://${module.jenkins_vm.jenkins_vm_ip}:8080"
-}
+#output "jenkins_url" {
+#  value = "http://${module.jenkins_vm.jenkins_vm_ip}:8080"
+#}
 
 
 output "cloudsql_private_ip" {
@@ -33,15 +33,15 @@ output "wordpress_namespace" {
   value = module.wordpress.namespace
 }
 
-output "wordpress_service_account" {
-  value = module.wordpress.service_account
-}
+#output "wordpress_service_account" {
+#  value = module.wordpress.service_account
+#}
 #
 #output "wordpress_storage_class" {
 #  value = module.wordpress.storage_class
 #}
 
 
-output "wordpress_release" {
-  value = module.wordpress.helm_release
-}
+#output "wordpress_release" {
+#  value = module.wordpress.helm_release
+#}

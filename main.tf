@@ -68,9 +68,9 @@ module "wordpress" {
 
   source = "./modules/wordpress"
 
-  project_id = var.project_id
+  #project_id = var.project_id
 
-  region = var.region
+  #region = var.region
 
   db_host = module.cloudsql.private_ip
 
@@ -82,9 +82,22 @@ module "wordpress" {
 
   domain = "myahad.online"
 
-  gcp_service_account = "wordpress-gsa@${var.project_id}.iam.gserviceaccount.com"
+  #gcp_service_account = "wordpress-gsa@${var.project_id}.iam.gserviceaccount.com"
 
 }
+
+#module "hpa" {
+
+# source = "./modules/hpa"
+
+# namespace = module.wordpress.namespace
+
+# deployment_name = module.wordpress.deployment_name
+
+# depends_on = [
+#module.wordpress
+    # ]
+    #}
 
 #module "jenkins" {
 # source     = "./modules/jenkins"
@@ -93,12 +106,12 @@ module "wordpress" {
 # depends_on = [module.gke]
 #}
 
-module "jenkins_vm" {
-  source     = "./modules/jenkins-vm"
-  project_id = var.project_id
-  region     = var.region
-  vpc_id     = module.network.vpc_id
-  subnet_id  = module.network.subnet_id
-  ##
-  depends_on = [module.network]
-}
+#module "jenkins_vm" {
+# source     = "./modules/jenkins-vm"
+# project_id = var.project_id
+# region     = var.region
+# vpc_id     = module.network.vpc_id
+# subnet_id  = module.network.subnet_id
+##
+# depends_on = [module.network]
+#}

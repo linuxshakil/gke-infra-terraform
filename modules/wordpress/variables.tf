@@ -1,38 +1,15 @@
-variable "project_id" {
-  type = string
-}
+variable "db_host" {}
 
-variable "region" {
-  type = string
-}
+variable "db_name" {}
 
-variable "db_host" {
-  type = string
-}
-
-variable "db_name" {
-  type = string
-}
-
-variable "db_user" {
-  type = string
-}
+variable "db_user" {}
 
 variable "db_password" {
-  type      = string
   sensitive = true
 }
 
-variable "domain" {
-  type = string
-}
+variable "domain" {}
 
-variable "gcp_service_account" {
-  type = string
+variable "service_account" {
+  default = "wordpress-sa"
 }
-
-variable "wordpress_chart_version" {
-  type    = string
-  default = "32.1.12"
-}
-

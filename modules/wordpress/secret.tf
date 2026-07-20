@@ -8,11 +8,6 @@ resource "kubernetes_secret" "wordpress_db" {
   type = "Opaque"
 
   data = {
-    mariadb-password = base64encode(var.db_password)
-    password         = base64encode(var.db_password)
+    password = var.db_password
   }
-
-  depends_on = [
-    kubernetes_namespace.wordpress
-  ]
 }
