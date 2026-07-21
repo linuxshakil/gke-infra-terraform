@@ -22,3 +22,12 @@ output "database_password" {
   value     = random_password.db_password.result
   sensitive = true
 }
+##############################################################
+# Cloud SQL Instance Service Account
+##############################################################
+
+output "service_account_email" {
+
+  value = google_sql_database_instance.mysql.service_account_email_address
+
+}

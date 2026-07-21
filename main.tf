@@ -140,3 +140,27 @@ module "external_secrets" {
 ##
 # depends_on = [module.network]
 #}
+
+module "backup" {
+
+  source = "./modules/backup"
+
+  providers = {
+    google      = google
+    google-beta = google-beta
+  }
+
+  project_id               = var.project_id
+  region                   = var.region
+  cloudsql_service_account = module.cloudsql.service_account_email
+
+}
+module "artifact_registry" {
+
+  source = "./modules/artifact-registry"
+
+  project_id = var.project_id
+
+  region = var.region
+
+}

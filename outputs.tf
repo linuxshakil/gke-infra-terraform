@@ -45,3 +45,18 @@ output "wordpress_namespace" {
 #output "wordpress_release" {
 #  value = module.wordpress.helm_release
 #}
+
+output "backup_bucket_name" {
+  value = module.backup.backup_bucket_name
+}
+
+output "backup_service_account" {
+
+  value = module.backup.backup_service_account_email
+
+}
+output "artifact_registry" {
+
+  value = module.artifact_registry.repository_url
+
+}
