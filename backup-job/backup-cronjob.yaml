@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: CronJob
+
+metadata:
+  name: wordpress-backup
+  namespace: wordpress
+
+spec:
+
+  schedule: "0 2 * * *"
+
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+
+    spec:
+
+      template:
+
+        spec:
+
+          restartPolicy: Never
+
+          serviceAccountName: cloudsql-backup
+
+          containers:
+
+          - name: backup
+
+            image: asia-south1-docker.pkg.dev/gke-prod-demo-001/backup-images/cloudsql-backup:v3
+
+            imagePullPolicy: Always
+
+            env:
+
+            - name: MODE
+              value: "backup"
+
+            - name: GOOGLE_CLOUD_PROJECT
+              value: "gke-prod-demo-001"
+
+            volumeMounts:
+
+            - name: wordpress-data
+              mountPath: /var/www/html/wp-content/uploads
+
+          volumes:
+
+          - name: wordpress-data
+
+            persistentVolumeClaim:
+
+              claimName: wordpress-data

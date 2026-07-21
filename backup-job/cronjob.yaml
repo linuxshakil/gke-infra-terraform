@@ -1,0 +1,15 @@
+containers:
+- name: backup
+
+  image: asia-south1-docker.pkg.dev/gke-prod-demo-001/backup-images/cloudsql-backup:v3
+
+  env:
+  - name: MODE
+    value: backup
+
+  - name: GOOGLE_CLOUD_PROJECT
+    value: gke-prod-demo-001
+
+  volumeMounts:
+  - name: wordpress-data
+    mountPath: /var/www/html/wp-content/uploads
