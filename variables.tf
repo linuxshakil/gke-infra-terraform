@@ -1,33 +1,41 @@
-variable "project_id" {
-  type = string
-}
+terraform {
+  required_version = ">= 1.8.0"
 
-variable "region" {
-  type    = string
-  default = "asia-south1"
-}
+  required_providers {
 
-variable "cluster_name" {
-  type    = string
-  default = "prod-gke-cluster"
-}
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.45"
+    }
 
-variable "zone" {
-  type = string
-}
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 6.45"
+    }
 
-variable "domain" {
-  type = string
-}
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.38"
+    }
 
-variable "db_instance_name" {
-  type = string
-}
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 3.0"
+    }
 
-variable "database_name" {
-  type = string
-}
+    kubectl = {
+      source  = "gavinbunney/kubectl"
+      version = "~> 1.19"
+    }
 
-variable "database_user" {
-  type = string
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.7"
+    }
+
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.7"
+    }
+  }
 }
