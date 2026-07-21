@@ -37,4 +37,20 @@ resource "kubernetes_service" "wordpress" {
 
   }
 
+  ##############################################################
+  # Ignore GKE-managed annotations
+  #
+  # GKE automatically adds annotations such as:
+  # cloud.google.com/neg-status
+  #
+  # These are runtime-managed by GKE and should not be reconciled
+  # by Terraform on every plan/apply.
+  ##############################################################
+
+  lifecycle {
+    ignore_changes = [
+      metadata[0].annotations
+    ]
+  }
+
 }

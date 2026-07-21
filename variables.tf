@@ -11,16 +11,23 @@ variable "cluster_name" {
   type    = string
   default = "prod-gke-cluster"
 }
-variable "zone" {}
 
-variable "domain" {}
+variable "zone" {
+  type = string
+}
 
-variable "db_host" {}
+variable "domain" {
+  type = string
+}
 
-variable "db_name" {}
+variable "db_instance_name" {
+  type = string
+}
 
-variable "db_user" {}
+variable "database_name" {
+  type = string
+}
 
-variable "db_password" {
-  sensitive = true
+variable "database_user" {
+  type = string
 }

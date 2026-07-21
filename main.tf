@@ -8,13 +8,16 @@ module "network" {
 
 
 module "gke" {
-  source       = "./modules/gke"
-  project_id   = var.project_id
-  region       = var.region
-  cluster_name = var.cluster_name
-  vpc_id       = module.network.vpc_id
-  subnet_id    = module.network.subnet_id
+  source               = "./modules/gke"
+  project_id           = var.project_id
+  region               = var.region
+  cluster_name         = var.cluster_name
+  vpc_id               = module.network.vpc_id
+  subnet_id            = module.network.subnet_id
+  node_service_account = module.iam.node_sa_email
 }
+
+
 resource "google_artifact_registry_repository" "node_app_repo" {
   location      = var.region
   repository_id = "node-app-repo"
@@ -22,6 +25,13 @@ resource "google_artifact_registry_repository" "node_app_repo" {
   project       = var.project_id
 }
 
+module "iam" {
+
+  source = "./modules/iam"
+
+  project_id = var.project_id
+
+}
 
 module "cloudsql" {
 
@@ -31,11 +41,11 @@ module "cloudsql" {
 
   region = var.region
 
-  instance_name = "wordpress-db"
+  instance_name = var.db_instance_name
 
-  database_name = "wordpress"
+  database_name = var.database_name
 
-  database_user = "wordpress"
+  database_user = var.database_user
 
   network_id = module.network.vpc_id
 
@@ -78,13 +88,28 @@ module "wordpress" {
 
   db_user = module.cloudsql.database_user
 
-  db_password = module.cloudsql.database_password
-
-  domain = "myahad.online"
-
-  #gcp_service_account = "wordpress-gsa@${var.project_id}.iam.gserviceaccount.com"
+  db_password         = module.cloudsql.database_password
+  gcp_service_account = "wordpress-gsa@${var.project_id}.iam.gserviceaccount.com"
+  domain              = var.domain
+  depends_on = [
+    module.secret_manager,
+    module.external_secrets
+  ]
 
 }
+
+
+module "external_secrets" {
+
+  source = "./modules/external-secrets"
+
+  project_id = var.project_id
+
+  depends_on = [
+    module.gke
+  ]
+}
+
 
 #module "hpa" {
 

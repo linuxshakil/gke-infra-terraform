@@ -22,3 +22,7 @@ variable "machine_type" {
   type    = string
   default = "e2-small"
 }
+
+variable "node_service_account" {
+  type = string
+}

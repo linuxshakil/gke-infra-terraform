@@ -13,3 +13,7 @@ variable "domain" {}
 variable "service_account" {
   default = "wordpress-sa"
 }
+
+variable "gcp_service_account" {
+  type = string
+}

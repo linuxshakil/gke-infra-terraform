@@ -6,9 +6,8 @@ zone = "asia-south1-a"
 
 domain = "myahad.online"
 
-db_host = "10.40.0.3"
+db_instance_name = "wordpress-db"
 
-db_name = "wordpress"
+database_name = "wordpress"
 
-db_user = "wordpress"
-
+database_user = "wordpress"

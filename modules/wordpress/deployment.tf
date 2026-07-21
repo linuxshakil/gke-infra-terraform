@@ -118,7 +118,8 @@ resource "kubernetes_deployment" "wordpress" {
 
               secret_key_ref {
 
-                name = kubernetes_secret.wordpress_db.metadata[0].name
+                ####name = kubernetes_secret.wordpress_db.metadata[0].name #####Humne secret.tf delete kar diya, lekin deployment.tf abhi bhi purane kubernetes_secret.wordpress_db resource ko reference kar raha hai
+                name = "wordpress-db" ##"wordpress-db" wahi Secret hai jo External Secrets create karega.
                 key  = "password"
 
               }
@@ -216,7 +217,7 @@ resource "kubernetes_deployment" "wordpress" {
 
   depends_on = [
 
-    kubernetes_secret.wordpress_db,
+    ##kubernetes_secret.wordpress_db, ###We are using external secret
     kubernetes_persistent_volume_claim.wordpress,
     kubernetes_service_account.wordpress
   ]
