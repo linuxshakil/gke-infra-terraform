@@ -1,30 +1,25 @@
 provider "google" {
-
   project = var.project_id
   region  = var.region
 }
 
 provider "google-beta" {
-
   project = var.project_id
   region  = var.region
 }
 
-provider "kubernetes" {
+data "google_client_config" "default" {}
 
-  host                   = "https://${module.gke.endpoint}"
+provider "kubernetes" {
+  host                   = "https://${module.gke.cluster_endpoint}"
   token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+  cluster_ca_certificate = base64decode(module.gke.cluster_ca_cert)
 }
 
 provider "helm" {
-
-  kubernetes {
-
-    host                   = "https://${module.gke.endpoint}"
+  kubernetes = {
+    host                   = "https://${module.gke.cluster_endpoint}"
     token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+    cluster_ca_certificate = base64decode(module.gke.cluster_ca_cert)
   }
 }
-
-data "google_client_config" "default" {}
