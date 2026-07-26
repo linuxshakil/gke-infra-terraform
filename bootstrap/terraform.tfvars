@@ -6,8 +6,8 @@ bucket_name = "gke-prod-demo-001-tf-state"
 
 github_service_account_name = "github-actions"
 
-github_pool_name = "github-actions-pool"
+github_pool_name = "github-actions-pool-v1"
 
-github_provider_name = "github-actions-provider"
+github_provider_name = "github-actions-provider-v1"
 
 github_repository = "shakilahmad25/gke-infra-terraform"
