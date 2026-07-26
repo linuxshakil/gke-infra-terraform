@@ -1,3 +1,13 @@
-project_id  = "gke-prod-demo-001"
-region      = "asia-south1"
+project_id = "gke-prod-demo-001"
+
+region = "asia-south1"
+
 bucket_name = "gke-prod-demo-001-tf-state"
+
+github_service_account_name = "github-actions"
+
+github_pool_name = "github-actions-pool"
+
+github_provider_name = "github-actions-provider"
+
+github_repository = "shakilahmad25/gke-infra-terraform"
