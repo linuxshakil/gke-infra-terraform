@@ -3,17 +3,16 @@ variable "project_id" {
 }
 
 variable "region" {
-  type    = string
-  default = "asia-south1"
+  type = string
+}
+
+variable "zone" {
+  type = string
 }
 
 variable "cluster_name" {
   type    = string
   default = "prod-gke-cluster"
-}
-
-variable "zone" {
-  type = string
 }
 
 variable "domain" {
