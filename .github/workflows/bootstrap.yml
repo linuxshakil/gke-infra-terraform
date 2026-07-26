@@ -1,3 +1,4 @@
+````yaml
 name: Bootstrap Infrastructure
 
 on:
@@ -40,8 +41,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.BOOTSTRAP_WIF_PROVIDER }}
-          service_account: ${{ secrets.BOOTSTRAP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       #########################################################
       # Install Google Cloud SDK
@@ -56,8 +57,21 @@ jobs:
 
       - name: Verify Authentication
         run: |
+          echo "=============================="
+          echo "Authenticated Account"
+          echo "=============================="
           gcloud auth list
-          gcloud config list
+
+          echo ""
+          echo "=============================="
+          echo "Current Project"
+          echo "=============================="
+          gcloud config get-value project
+
+          echo ""
+          echo "=============================="
+          echo "Project Details"
+          echo "=============================="
           gcloud projects describe ${{ secrets.GCP_PROJECT_ID }}
 
       #########################################################
@@ -67,7 +81,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.15.8
+          terraform_version: "1.15.8"
 
       #########################################################
       # Terraform Init
@@ -98,7 +112,7 @@ jobs:
         run: terraform plan -out=tfplan
 
       #########################################################
-      # Upload Plan
+      # Upload Terraform Plan
       #########################################################
 
       - name: Upload Terraform Plan
@@ -116,8 +130,28 @@ jobs:
         run: terraform apply -auto-approve tfplan
 
       #########################################################
-      # Display Outputs
+      # Terraform Outputs
       #########################################################
 
-      - name: Bootstrap Outputs
+      - name: Terraform Outputs
         run: terraform output
+
+      #########################################################
+      # Job Summary
+      #########################################################
+
+      - name: Bootstrap Summary
+        run: |
+          {
+            echo "# Bootstrap Completed Successfully"
+            echo ""
+            echo "## Project"
+            echo "${{ secrets.GCP_PROJECT_ID }}"
+            echo ""
+            echo "## Terraform Outputs"
+            echo '```'
+            terraform output
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+````
+

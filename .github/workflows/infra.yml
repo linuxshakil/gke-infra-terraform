@@ -1,3 +1,4 @@
+````yaml
 name: Terraform Infrastructure
 
 on:
@@ -47,17 +48,17 @@ jobs:
         uses: actions/checkout@v4
 
       #########################################################
-      # Authenticate to Google Cloud (Workload Identity)
+      # Authenticate to Google Cloud
       #########################################################
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GITHUB_ACTIONS_SA }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       #########################################################
-      # Install Google Cloud SDK
+      # Setup Google Cloud SDK
       #########################################################
 
       - name: Setup Google Cloud SDK
@@ -67,11 +68,24 @@ jobs:
       # Verify Authentication
       #########################################################
 
-      - name: Verify Google Authentication
+      - name: Verify Authentication
         run: |
+          echo "=============================="
+          echo "Authenticated Account"
+          echo "=============================="
           gcloud auth list
-          gcloud config list
-          gcloud projects list --limit=5
+
+          echo ""
+          echo "=============================="
+          echo "Current Project"
+          echo "=============================="
+          gcloud config get-value project
+
+          echo ""
+          echo "=============================="
+          echo "Project Details"
+          echo "=============================="
+          gcloud projects describe ${{ secrets.GCP_PROJECT_ID }}
 
       #########################################################
       # Setup Terraform
@@ -80,7 +94,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.15.8
+          terraform_version: "1.15.8"
 
       #########################################################
       # Terraform Init
@@ -90,7 +104,7 @@ jobs:
         run: terraform init
 
       #########################################################
-      # Terraform Format Check
+      # Terraform Format
       #########################################################
 
       - name: Terraform Format
@@ -108,25 +122,51 @@ jobs:
       #########################################################
 
       - name: Terraform Plan
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         run: terraform plan -out=tfplan
 
       #########################################################
-      # Upload Plan Artifact
+      # Upload Plan
       #########################################################
 
       - name: Upload Terraform Plan
-        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan
+          name: infra-plan
           path: infra/tfplan
           retention-days: 7
 
       #########################################################
-      # Terraform Apply (Main branch only)
+      # Terraform Apply
       #########################################################
 
       - name: Terraform Apply
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
+
+      #########################################################
+      # Terraform Outputs
+      #########################################################
+
+      - name: Terraform Outputs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: terraform output
+
+      #########################################################
+      # Job Summary
+      #########################################################
+
+      - name: Terraform Summary
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          {
+            echo "# Infrastructure Deployment Successful"
+            echo ""
+            echo "## Project"
+            echo "${{ secrets.GCP_PROJECT_ID }}"
+            echo ""
+            echo "## Terraform Outputs"
+            echo '```'
+            terraform output
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+````
