@@ -10,4 +10,4 @@ github_pool_name = "github-actions-pool-v1"
 
 github_provider_name = "github-actions-provider-v1"
 
-github_repository = "shakilahmad25/gke-infra-terraform"
+github_repository = "linuxshakil/gke-infra-terraform"
