@@ -7,7 +7,7 @@ module "network" {
 
   project_id   = var.project_id
   cluster_name = var.cluster_name
-  region        = var.region
+  region       = var.region
 }
 
 #############################################################
@@ -27,12 +27,12 @@ module "iam" {
 module "gke" {
   source = "./modules/gke"
 
-  project_id           = var.project_id
-  region               = var.region
-  cluster_name         = var.cluster_name
+  project_id   = var.project_id
+  region       = var.region
+  cluster_name = var.cluster_name
 
-  vpc_id               = module.network.vpc_id
-  subnet_id            = module.network.subnet_id
+  vpc_id    = module.network.vpc_id
+  subnet_id = module.network.subnet_id
 
   node_service_account = module.iam.node_sa_email
 
@@ -49,8 +49,8 @@ module "gke" {
 module "cloudsql" {
   source = "./modules/cloudsql"
 
-  project_id   = var.project_id
-  region       = var.region
+  project_id = var.project_id
+  region     = var.region
 
   instance_name = var.db_instance_name
   database_name = var.database_name
