@@ -6,7 +6,7 @@ zone = "asia-south1-a"
 
 cluster_name = "prod-gke-cluster"
 
-machine_type = "e2-medium"
+machine_type = "e2-small"
 
 db_instance_name = "wordpress-db"
 
