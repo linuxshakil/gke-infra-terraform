@@ -39,132 +39,174 @@ jobs:
 
     steps:
 
-      #########################################################
-      # Checkout Repository
-      #########################################################
+    #########################################################
+    # Checkout Repository
+    #########################################################
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-      #########################################################
-      # Authenticate to Google Cloud
-      #########################################################
+    #########################################################
+    # Authenticate to Google Cloud
+    #########################################################
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+        service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-      #########################################################
-      # Setup Google Cloud SDK
-      #########################################################
+    #########################################################
+    # Install Google Cloud SDK
+    #########################################################
 
-      - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+    - name: Setup Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
 
-      #########################################################
-      # Verify Authentication
-      #########################################################
+    #########################################################
+    # Verify Authentication
+    #########################################################
 
-      - name: Verify Authentication
-        run: |
-          echo "=============================="
-          echo "Authenticated Account"
-          echo "=============================="
-          gcloud auth list
+    - name: Verify Authentication
+      run: |
+        echo "======================================="
+        echo "Authenticated Account"
+        echo "======================================="
+        gcloud auth list
 
+        echo ""
+        echo "======================================="
+        echo "Current Project"
+        echo "======================================="
+        gcloud config get-value project
+
+        echo ""
+        echo "======================================="
+        echo "Project Details"
+        echo "======================================="
+        gcloud projects describe ${{ secrets.GCP_PROJECT_ID }}
+
+    #########################################################
+    # Setup Terraform
+    #########################################################
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.15.8"
+
+    #########################################################
+    # Terraform Init
+    #########################################################
+
+    - name: Terraform Init
+      run: terraform init
+
+    #########################################################
+    # Terraform Format Check
+    #########################################################
+
+    - name: Terraform Format
+      run: terraform fmt -recursive -check
+
+    #########################################################
+    # Terraform Validate
+    #########################################################
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    #########################################################
+    # Terraform Plan
+    #########################################################
+
+    - name: Terraform Plan
+      run: terraform plan -no-color -out=tfplan
+
+    #########################################################
+    # Upload Plan
+    #########################################################
+
+    - name: Upload Terraform Plan
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-plan
+        path: infra/tfplan
+        retention-days: 7
+
+    #########################################################
+    # Terraform Apply
+    #########################################################
+
+    - name: Terraform Apply
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        terraform apply \
+          -auto-approve \
+          -no-color \
+          tfplan | tee terraform-apply.log
+
+    #########################################################
+    # Export Outputs
+    #########################################################
+
+    - name: Export Terraform Outputs
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: terraform output -json > terraform-output.json
+
+    #########################################################
+    # Upload Apply Log
+    #########################################################
+
+    - name: Upload Apply Log
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-apply-log
+        path: infra/terraform-apply.log
+        retention-days: 30
+
+    #########################################################
+    # Upload Outputs
+    #########################################################
+
+    - name: Upload Terraform Outputs
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-outputs
+        path: infra/terraform-output.json
+        retention-days: 30
+
+    #########################################################
+    # Display Outputs
+    #########################################################
+
+    - name: Terraform Outputs
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: terraform output
+
+    #########################################################
+    # GitHub Summary
+    #########################################################
+
+    - name: Deployment Summary
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        {
+          echo "# Terraform Infrastructure Deployment"
           echo ""
-          echo "=============================="
-          echo "Current Project"
-          echo "=============================="
-          gcloud config get-value project
-
+          echo "## Project"
+          echo "${{ secrets.GCP_PROJECT_ID }}"
           echo ""
-          echo "=============================="
-          echo "Project Details"
-          echo "=============================="
-          gcloud projects describe ${{ secrets.GCP_PROJECT_ID }}
-
-      #########################################################
-      # Setup Terraform
-      #########################################################
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.15.8"
-
-      #########################################################
-      # Terraform Init
-      #########################################################
-
-      - name: Terraform Init
-        run: terraform init
-
-      #########################################################
-      # Terraform Format
-      #########################################################
-
-      - name: Terraform Format
-        run: terraform fmt -recursive -check
-
-      #########################################################
-      # Terraform Validate
-      #########################################################
-
-      - name: Terraform Validate
-        run: terraform validate
-
-      #########################################################
-      # Terraform Plan
-      #########################################################
-
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
-
-      #########################################################
-      # Upload Plan
-      #########################################################
-
-      - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: infra-plan
-          path: infra/tfplan
-          retention-days: 7
-
-      #########################################################
-      # Terraform Apply
-      #########################################################
-
-      - name: Terraform Apply
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: terraform apply -auto-approve tfplan
-
-      #########################################################
-      # Terraform Outputs
-      #########################################################
-
-      - name: Terraform Outputs
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: terraform output
-
-      #########################################################
-      # Job Summary
-      #########################################################
-
-      - name: Terraform Summary
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          {
-            echo "# Infrastructure Deployment Successful"
-            echo ""
-            echo "## Project"
-            echo "${{ secrets.GCP_PROJECT_ID }}"
-            echo ""
-            echo "## Terraform Outputs"
-            echo '```'
-            terraform output
-            echo '```'
-          } >> $GITHUB_STEP_SUMMARY
+          echo "## Branch"
+          echo "${{ github.ref_name }}"
+          echo ""
+          echo "## Commit"
+          echo "${{ github.sha }}"
+          echo ""
+          echo "## Terraform Outputs"
+          echo '```'
+          terraform output
+          echo '```'
+        } >> $GITHUB_STEP_SUMMARY

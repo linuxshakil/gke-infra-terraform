@@ -2,12 +2,8 @@ project_id = "gke-prod-demo-001"
 
 region = "asia-south1"
 
-zone = "asia-south1-a"
+cluster_name = "prod-gke-cluster"
 
-domain = "myahad.online"
+machine_type = "e2-medium"
 
-db_instance_name = "wordpress-db"
-
-database_name = "wordpress"
-
-database_user = "wordpress"
+node_service_account = "prod-gke-cluster-node-sa@gke-prod-demo-001.iam.gserviceaccount.com"
