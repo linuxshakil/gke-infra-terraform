@@ -781,4 +781,4 @@ Key takeaways for anyone studying this repo (in short, practical language):
 
 ---
 
-*This README was generated to document and explain the `gke-infra-terraform` repository end-to-end — happy learning! 🚀*
+*Happy learning! 🚀*
