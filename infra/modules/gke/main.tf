@@ -6,8 +6,8 @@ resource "google_container_cluster" "primary" {
   network    = var.vpc_id
   subnetwork = var.subnet_id
 
-  #remove_default_node_pool = true
-  initial_node_count = 1
+  remove_default_node_pool = true
+  initial_node_count       = 1
 
   networking_mode = "VPC_NATIVE"
 
@@ -17,7 +17,6 @@ resource "google_container_cluster" "primary" {
   }
 
   private_cluster_config {
-
     enable_private_nodes    = true
     enable_private_endpoint = false
 
@@ -25,14 +24,10 @@ resource "google_container_cluster" "primary" {
   }
 
   master_authorized_networks_config {
-
     cidr_blocks {
-
       cidr_block   = "0.0.0.0/0"
       display_name = "Temporary Access"
-
     }
-
   }
 
   release_channel {
@@ -85,20 +80,20 @@ resource "google_container_cluster" "primary" {
 }
 
 ############################################################
-# Node Pool
+# Custom Node Pool
 ############################################################
 
 resource "google_container_node_pool" "primary_nodes" {
 
-  name = "${var.cluster_name}-pool"
-
-  cluster = google_container_cluster.primary.name
-
+  name     = "${var.cluster_name}-pool"
+  cluster  = google_container_cluster.primary.name
   location = var.region
+
+  node_count = 2
 
   autoscaling {
 
-    min_node_count = 1
+    min_node_count = 2
     max_node_count = 3
 
   }
@@ -108,8 +103,7 @@ resource "google_container_node_pool" "primary_nodes" {
     machine_type = var.machine_type
 
     disk_size_gb = 20
-
-    disk_type = "pd-standard"
+    disk_type    = "pd-standard"
 
     service_account = var.node_service_account
 
@@ -122,25 +116,17 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     shielded_instance_config {
-
-      enable_secure_boot = true
-
+      enable_secure_boot          = true
       enable_integrity_monitoring = true
-
     }
 
     labels = {
-
       env = "production"
-
     }
 
     tags = [
-
       "gke-node",
-
       "${var.cluster_name}-node"
-
     ]
 
   }
@@ -148,8 +134,7 @@ resource "google_container_node_pool" "primary_nodes" {
   management {
 
     auto_upgrade = true
-
-    auto_repair = true
+    auto_repair  = true
 
   }
 
