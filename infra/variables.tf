@@ -30,3 +30,7 @@ variable "database_name" {
 variable "database_user" {
   type = string
 }
+variable "machine_type" {
+  type    = string
+  default = "e2-medium"
+}

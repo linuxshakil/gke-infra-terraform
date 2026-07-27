@@ -4,6 +4,4 @@ region = "asia-south1"
 
 cluster_name = "prod-gke-cluster"
 
-machine_type = "e2-medium"
-
-node_service_account = "prod-gke-cluster-node-sa@gke-prod-demo-001.iam.gserviceaccount.com"
+#machine_type = "e2-medium"

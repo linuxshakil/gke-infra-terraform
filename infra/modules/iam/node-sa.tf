@@ -10,44 +10,22 @@ resource "google_service_account" "node_sa" {
 }
 
 #########################################################
-# Node Permissions
+# Node IAM Roles
 #########################################################
 
-resource "google_project_iam_member" "node_logging" {
+resource "google_project_iam_member" "node_roles" {
+
+  for_each = toset([
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter",
+    "roles/monitoring.viewer",
+    "roles/artifactregistry.reader",
+    "roles/stackdriver.resourceMetadata.writer"
+  ])
 
   project = var.project_id
 
-  role = "roles/logging.logWriter"
-
-  member = "serviceAccount:${google_service_account.node_sa.email}"
-
-}
-
-resource "google_project_iam_member" "node_monitoring" {
-
-  project = var.project_id
-
-  role = "roles/monitoring.metricWriter"
-
-  member = "serviceAccount:${google_service_account.node_sa.email}"
-
-}
-
-resource "google_project_iam_member" "node_artifact_reader" {
-
-  project = var.project_id
-
-  role = "roles/artifactregistry.reader"
-
-  member = "serviceAccount:${google_service_account.node_sa.email}"
-
-}
-
-resource "google_project_iam_member" "node_stackdriver" {
-
-  project = var.project_id
-
-  role = "roles/stackdriver.resourceMetadata.writer"
+  role = each.value
 
   member = "serviceAccount:${google_service_account.node_sa.email}"
 

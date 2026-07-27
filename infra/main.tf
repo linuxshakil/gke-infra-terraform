@@ -25,6 +25,7 @@ module "iam" {
 #############################################################
 
 module "gke" {
+
   source = "./modules/gke"
 
   project_id   = var.project_id
@@ -35,12 +36,10 @@ module "gke" {
   subnet_id            = module.network.subnet_id
   machine_type         = var.machine_type
   node_service_account = module.iam.node_sa_email
-
-  depends_on = [
-    module.network,
-    module.iam
-  ]
 }
+
+
+
 
 #############################################################
 # Cloud SQL
