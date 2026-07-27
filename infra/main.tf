@@ -24,18 +24,21 @@ module "iam" {
 # GKE Cluster
 #############################################################
 
+
 module "gke" {
 
   source = "./modules/gke"
 
   project_id   = var.project_id
   region       = var.region
+  zone         = var.zone
   cluster_name = var.cluster_name
 
   vpc_id               = module.network.vpc_id
   subnet_id            = module.network.subnet_id
   machine_type         = var.machine_type
   node_service_account = module.iam.node_sa_email
+
 }
 
 

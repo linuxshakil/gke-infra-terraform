@@ -2,6 +2,8 @@ project_id = "gke-prod-demo-001"
 
 region = "asia-south1"
 
+zone = "asia-south1-a"
+
 cluster_name = "prod-gke-cluster"
 
 machine_type = "e2-medium"
