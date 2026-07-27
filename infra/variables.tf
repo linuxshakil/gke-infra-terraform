@@ -6,17 +6,14 @@ variable "region" {
   type = string
 }
 
-variable "zone" {
-  type = string
-}
-
 variable "cluster_name" {
   type    = string
   default = "prod-gke-cluster"
 }
 
-variable "domain" {
-  type = string
+variable "machine_type" {
+  type    = string
+  default = "e2-medium"
 }
 
 variable "db_instance_name" {
@@ -29,8 +26,4 @@ variable "database_name" {
 
 variable "database_user" {
   type = string
-}
-variable "machine_type" {
-  type    = string
-  default = "e2-medium"
 }
