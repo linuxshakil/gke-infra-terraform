@@ -1,0 +1,215 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DESTROY to destroy the infrastructure'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_IN_AUTOMATION: true
+
+jobs:
+
+  destroy:
+
+    if: github.event.inputs.confirm == 'DESTROY'
+
+    name: Terraform Destroy
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 60
+
+    environment: production
+
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+
+############################################################
+# Checkout
+############################################################
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+############################################################
+# Authenticate to Google Cloud
+############################################################
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+############################################################
+# Install Google Cloud SDK
+############################################################
+
+      - name: Setup Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+############################################################
+# Verify Authentication
+############################################################
+
+      - name: Verify Google Authentication
+        run: |
+
+          echo "========== ACCOUNT =========="
+          gcloud auth list
+
+          echo ""
+
+          echo "========== PROJECT =========="
+          gcloud config get-value project
+
+############################################################
+# Setup Terraform
+############################################################
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.8
+
+############################################################
+# Terraform Version
+############################################################
+
+      - name: Terraform Version
+        run: terraform version
+
+############################################################
+# Terraform Init
+############################################################
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -input=false
+
+############################################################
+# Validate
+############################################################
+
+      - name: Terraform Validate
+        run: terraform validate
+
+############################################################
+# Destroy Plan
+############################################################
+
+      - name: Terraform Destroy Plan
+        run: |
+          terraform plan \
+            -destroy \
+            -parallelism=20 \
+            -input=false \
+            -lock-timeout=10m \
+            -no-color \
+            -out=destroy.tfplan
+
+############################################################
+# Show Destroy Plan
+############################################################
+
+      - name: Show Destroy Plan
+        run: terraform show -no-color destroy.tfplan
+
+############################################################
+# Upload Destroy Plan
+############################################################
+
+      - name: Upload Destroy Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-destroy-plan
+          path: infra/destroy.tfplan
+          retention-days: 30
+
+############################################################
+# Destroy Infrastructure
+############################################################
+
+      - name: Terraform Destroy
+        run: |
+          terraform apply \
+            -parallelism=20 \
+            -input=false \
+            -auto-approve \
+            -no-color \
+            destroy.tfplan | tee terraform-destroy.log
+
+############################################################
+# Upload Destroy Log
+############################################################
+
+      - name: Upload Destroy Log
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-destroy-log
+          path: infra/terraform-destroy.log
+          retention-days: 30
+
+############################################################
+# Verify Resources
+############################################################
+
+      - name: Verify GKE Cluster Removal
+        continue-on-error: true
+        run: |
+          echo "========== GKE Clusters =========="
+          gcloud container clusters list
+
+############################################################
+# GitHub Summary
+############################################################
+
+      - name: Destroy Summary
+        run: |
+
+          {
+            echo "# Terraform Destroy"
+
+            echo ""
+
+            echo "## Project"
+
+            echo "${{ secrets.GCP_PROJECT_ID }}"
+
+            echo ""
+
+            echo "## Region"
+
+            echo "${{ secrets.GCP_REGION }}"
+
+            echo ""
+
+            echo "## Branch"
+
+            echo "${{ github.ref_name }}"
+
+            echo ""
+
+            echo "## Commit"
+
+            echo "${{ github.sha }}"
+
+            echo ""
+
+            echo "## Status"
+
+            echo "Infrastructure Destroy Completed"
+
+          } >> $GITHUB_STEP_SUMMARY
