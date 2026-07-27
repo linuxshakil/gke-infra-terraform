@@ -6,7 +6,7 @@ resource "google_container_cluster" "primary" {
   network    = var.vpc_id
   subnetwork = var.subnet_id
 
-  remove_default_node_pool = true
+  #remove_default_node_pool = true
   initial_node_count       = 1
 
   networking_mode = "VPC_NATIVE"

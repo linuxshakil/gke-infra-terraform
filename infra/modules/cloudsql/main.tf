@@ -3,7 +3,7 @@ resource "google_sql_database_instance" "mysql" {
   name                = var.instance_name
   database_version    = "MYSQL_8_0"
   region              = var.region
-  deletion_protection = true
+  deletion_protection = false #Make it true for prod or actual use
 
   settings {
 
