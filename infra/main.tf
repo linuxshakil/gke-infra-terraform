@@ -31,9 +31,9 @@ module "gke" {
   region       = var.region
   cluster_name = var.cluster_name
 
-  vpc_id    = module.network.vpc_id
-  subnet_id = module.network.subnet_id
-  machine_type = var.machine_type
+  vpc_id               = module.network.vpc_id
+  subnet_id            = module.network.subnet_id
+  machine_type         = var.machine_type
   node_service_account = module.iam.node_sa_email
 
   depends_on = [
