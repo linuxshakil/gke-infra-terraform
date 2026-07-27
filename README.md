@@ -699,23 +699,57 @@ A: It's a demo/learning setup with a few production hardenings still pending —
 
 ## 21. Interview Questions
 
-A short set of questions this project naturally prepares you to answer:
+A set of questions this project naturally prepares you to answer — with simple, direct answers.
 
-1. **What problem does a Terraform "bootstrap" project solve, and why can't you just use one root module for everything?**
-2. **Explain Workload Identity Federation. How is it different from using a downloaded service account key in CI/CD?**
-3. **Why does a GKE private cluster still need Cloud NAT?**
-4. **What is a GCS backend for Terraform, and what does state *locking* actually prevent?**
-5. **Why is `ip_allocation_policy` with secondary ranges required for VPC-native GKE clusters?**
-6. **How does Workload Identity let a Kubernetes pod act as a specific GCP service account, without a mounted key file?**
-7. **Why do we store the Cloud SQL password in Secret Manager instead of directly in a Kubernetes Secret YAML?**
-8. **What's the purpose of `terraform plan -out=tfplan` followed by `terraform apply tfplan` instead of just `terraform apply`?**
-9. **How would you roll back if a bad `terraform apply` already ran in production?**
-10. **What's the difference between `disable_on_destroy = false` on `google_project_service` and the default? Why might you want it `false`?**
-11. **Why is `master_authorized_networks_config` open to `0.0.0.0/0` here a security smell, and how would you fix it?**
-12. **Explain the flow of a GitHub Actions OIDC token from "workflow starts" to "Terraform gets a usable GCP credential."**
-13. **What happens to your Terraform state if the GCS bucket is accidentally deleted, and how would you prevent/recover from that?**
-14. **Why use `random_password` instead of a variable with a default value for the database password?**
-15. **What's the benefit of splitting IAM into per-workload service accounts instead of one shared service account for the whole cluster?**
+**1. What problem does a Terraform "bootstrap" project solve?**
+Terraform needs a place to store its state file (in a GCS bucket) and GitHub Actions needs an identity to log into GCP. But you can't create that state bucket using Terraform if the state itself needs to live in that same bucket — it's a chicken-and-egg problem. So `bootstrap/` is a small, separate Terraform project you run once, manually, to create the bucket + CI identity first. After that, the main `infra/` project can safely use them.
+
+**2. Explain Workload Identity Federation (WIF). How is it different from a service account key?**
+Normally, CI/CD tools log into GCP using a downloaded JSON key — a long-lived secret that never expires on its own and is dangerous if leaked. WIF is different: GitHub gives the workflow a short-lived, signed identity token (OIDC token). GCP trusts this token (only from your specific repo) and exchanges it for a temporary GCP access token. Nothing is stored, nothing to leak, nothing to rotate.
+
+**3. Why does a private GKE cluster still need Cloud NAT?**
+"Private" means the nodes have no public IP address. But nodes still need internet access sometimes (like pulling public Docker images). Cloud NAT lets private nodes reach the internet for outgoing traffic only, without giving them a public IP that could be attacked from outside.
+
+**4. What is a GCS backend, and what does state locking prevent?**
+A GCS backend means Terraform's state file is stored in a Cloud Storage bucket instead of on your laptop. This lets a team (or CI) share the same state safely. State locking stops two `terraform apply` commands from running at the exact same time — without locking, they could both edit the state and corrupt it.
+
+**5. Why does VPC-native GKE need secondary IP ranges?**
+GKE gives every pod and every service its own real IP address inside the VPC (not NAT'd). To do this cleanly, GKE needs two separate address blocks: one for pods (`pods-range`) and one for services (`services-range`), set up in advance on the subnet.
+
+**6. How does Workload Identity let a pod act as a GCP service account?**
+Instead of mounting a key file inside the pod, you create a link: "this GCP service account trusts this specific Kubernetes service account, in this specific namespace." When a pod using that Kubernetes SA calls a Google API, GKE automatically gives it a temporary GCP token behind the scenes — no key file, no secret to manage.
+
+**7. Why store the DB password in Secret Manager instead of a plain Kubernetes Secret?**
+Kubernetes Secrets are only base64-encoded, not really encrypted, and often end up written in YAML files that get committed to Git by mistake. Secret Manager stores it properly encrypted in Google Cloud, with access control and audit logs. External Secrets Operator then pulls it into the cluster only at runtime.
+
+**8. Why do `terraform plan -out=tfplan` then `terraform apply tfplan` instead of just `terraform apply`?**
+This guarantees you apply *exactly* what you reviewed in the plan. If you just run `apply` alone, it re-calculates a fresh plan at that moment — and if something in the cloud changed in between, the plan could differ from what you saw earlier. Saving the plan to a file locks it in.
+
+**9. How would you roll back a bad `terraform apply` in production?**
+First, don't panic-delete anything. Check `terraform state list` and `terraform plan` to see the current difference. If you have a previous state version (GCS bucket versioning helps here), you can restore it. Otherwise, fix the `.tf` code to represent the desired state and run `plan`/`apply` again carefully — Terraform is declarative, so the fix is usually "correct the code, then re-apply," not manual console changes.
+
+**10. What does `disable_on_destroy = false` do on `google_project_service`?**
+By default, if you delete the Terraform resource that "enabled" an API, Terraform would also disable that API on the project. Setting `disable_on_destroy = false` means: even if this resource is destroyed, keep the API enabled — useful because other things (or other teams) might still depend on that API being on.
+
+**11. Why is `0.0.0.0/0` in `master_authorized_networks_config` a security problem?**
+This setting controls which IP addresses are allowed to talk to the Kubernetes API server (the "master"). Setting it to `0.0.0.0/0` means literally anyone on the internet can attempt to connect to your cluster's control plane. It should instead be locked to your office IP, VPN range, or CI runner IP ranges.
+
+**12. Explain the GitHub Actions OIDC → GCP token flow.**
+Step by step:
+1. Workflow starts, GitHub generates a short-lived OIDC token containing claims like repo name and branch.
+2. `google-github-actions/auth` sends this token to GCP's Workload Identity Pool.
+3. GCP checks the token is signed by GitHub and matches the `attribute_condition` (correct repo).
+4. If it matches, GCP issues a short-lived GCP access token, allowed to impersonate the GitHub Actions service account.
+5. Terraform uses that temporary token to talk to GCP APIs.
+
+**13. What happens if the GCS state bucket gets accidentally deleted?**
+Terraform loses all memory of what it created — it doesn't know your VPC, GKE cluster, etc. exist anymore. On the next apply, it may try to recreate everything from scratch, causing duplicate resources or naming conflicts. To prevent this: keep bucket versioning on, restrict who can delete the bucket, and take backups. To recover: restore an older state version, or manually `terraform import` existing resources back into a fresh state.
+
+**14. Why use `random_password` instead of a fixed variable for the DB password?**
+If the password were a variable with a default value, it would sit in plain text in your `.tf` files and probably get committed to Git. `random_password` generates a strong password automatically at apply time, and it's marked `sensitive = true`, so it's never printed in logs or stored as plain code.
+
+**15. Why use separate service accounts per workload instead of one shared SA?**
+This follows the "least privilege" principle. If one service account (say, the WordPress one) gets compromised, the attacker only gets the small set of permissions that account has (like reading one secret) — not full control over the cluster, database, and CI/CD, which would happen if everything shared one powerful account.
 
 ---
 
@@ -747,4 +781,4 @@ Key takeaways for anyone studying this repo (in short, practical language):
 
 ---
 
-*Happy learning! 🚀*
+*This README was generated to document and explain the `gke-infra-terraform` repository end-to-end — happy learning! 🚀*
