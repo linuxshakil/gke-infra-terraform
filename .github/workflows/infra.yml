@@ -1,4 +1,3 @@
-````yaml
 name: Terraform Infrastructure
 
 on:
@@ -169,4 +168,3 @@ jobs:
             terraform output
             echo '```'
           } >> $GITHUB_STEP_SUMMARY
-````
