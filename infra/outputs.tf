@@ -42,3 +42,23 @@ output "backup_service_account" {
 output "artifact_registry" {
   value = module.artifact_registry.repository_url
 }
+
+#############################################################
+# Database
+#############################################################
+
+output "database_name" {
+  value = var.database_name
+}
+
+output "database_user" {
+  value = var.database_user
+}
+
+#############################################################
+# IAM
+#############################################################
+
+output "node_service_account" {
+  value = module.iam.node_sa_email
+}

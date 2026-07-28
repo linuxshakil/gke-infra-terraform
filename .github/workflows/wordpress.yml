@@ -1,0 +1,70 @@
+# Workflow name displayed in GitHub Actions
+name: Deploy WordPress
+
+on:
+  push:
+    branches:
+      - main
+
+    # Run workflow only when WordPress code changes
+    paths:
+      - "apps/wordpress/**"
+      - ".github/workflows/wordpress.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+
+    # GitHub hosted Ubuntu runner
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        # Execute all commands from the WordPress directory
+        working-directory: apps/wordpress
+
+    steps:
+
+      # Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Authenticate to Google Cloud using Workload Identity Federation
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA }}
+
+      # Install Google Cloud SDK
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.0
+
+      # Download providers and initialize backend
+      - name: Terraform Init
+        run: terraform init
+
+      # Verify Terraform formatting
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      # Validate Terraform configuration
+      - name: Terraform Validate
+        run: terraform validate
+
+      # Generate execution plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      # Apply infrastructure changes
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan

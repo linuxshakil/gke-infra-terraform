@@ -139,15 +139,15 @@ resource "kubernetes_deployment" "wordpress" {
 
             requests = {
 
-              cpu    = "250m"
-              memory = "512Mi"
+              cpu    = "100m"
+              memory = "128Mi"
 
             }
 
             limits = {
 
-              cpu    = "500m"
-              memory = "1Gi"
+              cpu    = "250m"
+              memory = "500Mi"
 
             }
 
@@ -162,7 +162,8 @@ resource "kubernetes_deployment" "wordpress" {
 
             }
 
-            initial_delay_seconds = 60
+            initial_delay_seconds = 120
+            timeout_seconds       = 5
             period_seconds        = 20
 
           }
@@ -177,6 +178,7 @@ resource "kubernetes_deployment" "wordpress" {
             }
 
             initial_delay_seconds = 30
+            timeout_seconds       = 5
             period_seconds        = 10
 
           }
@@ -190,6 +192,7 @@ resource "kubernetes_deployment" "wordpress" {
 
             }
 
+            timeout_seconds   = 10
             failure_threshold = 30
             period_seconds    = 10
 
