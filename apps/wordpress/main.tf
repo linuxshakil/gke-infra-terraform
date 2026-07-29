@@ -26,6 +26,7 @@ module "wordpress" {
 
   domain = "myahad.online"
 
-  gcp_service_account = data.terraform_remote_state.infra.outputs.node_service_account
+  #gcp_service_account = data.terraform_remote_state.infra.outputs.node_service_account
+  gcp_service_account = data.terraform_remote_state.infra.outputs.wordpress_gsa_email
 
 }

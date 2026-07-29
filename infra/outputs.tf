@@ -62,3 +62,8 @@ output "database_user" {
 output "node_service_account" {
   value = module.iam.node_sa_email
 }
+
+output "wordpress_gsa_email" {
+  value       = module.iam.wordpress_gsa_email
+  description = "Email of the dedicated WordPress GCP service account (bound via Workload Identity)"
+}
