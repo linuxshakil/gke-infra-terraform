@@ -1207,12 +1207,10 @@ A plain Kubernetes Secret is only base64-encoded (trivially reversible) and, if 
 ## 28. Future Improvements
 
 - [x] ~~Add the missing `wordpress_gsa_email` output to `infra/outputs.tf` and fix `apps/wordpress/main.tf` to use it~~ — done
-- [ ] Re-add a proper HPA (HorizontalPodAutoscaler) as a real module under `apps/wordpress/modules/`, wired into that project's `main.tf`
 - [ ] Delete the remaining inert `.yaml`/`.tf-backup` files in `apps/wordpress/modules/`
 - [ ] Parameterize `secretstore.tf`'s hardcoded `projectID` with `var.project_id`
 - [ ] Add a staging environment (separate `.tfvars` + separate backend `prefix` per environment, times 4 projects)
 - [ ] Add Terratest/`terraform test` coverage for each of the 4 projects
-- [ ] Add Prometheus/Grafana and ArgoCD as discussed previously
 
 ---
 
