@@ -14,12 +14,7 @@ resource "kubernetes_deployment" "wordpress" {
     replicas = 1
 
     strategy {
-      type = "RollingUpdate"
-
-      rolling_update {
-        max_surge       = "25%"
-        max_unavailable = "25%"
-      }
+      type = "Recreate"
     }
 
     selector {
